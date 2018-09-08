@@ -1,7 +1,8 @@
-var express = require("express");
-var bodyParser = require("body-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
+const express = require("express");
+const bodyParser = require("body-parser");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const request = require('request');
 
 // Our scraping tools
 // Axios is a promised-based http library, similar to jQuery's Ajax method
@@ -33,19 +34,45 @@ mongoose.connect("mongodb://localhost/newreleases");
 //                  Routes
 //===============================================
 
-app.get("/scrape", function(req, res){
-    axios.get('https://www.metacritic.com/browse/movies/release-date/theaters/date')
-    .then(function(response){
-        var $ = cheerio.load(response.data);
-        // console.log(response.data);
-        $('movie h2').each(function(i, element){
-            var result = {};
+// app.get("/scrape", function(req, res){
+//     axios.get('https://www.metacritic.com/browse/movies/release-date/theaters/date')
+//     .then(function(response){
+//         const $ = cheerio.load(response.data);
 
-            result.title = $(this)
-                .children('')
+
+//         console.log();
+
+    
+        
+//         const results = {};
+        
+        
+
+
+
+//         $('movie h2').each(function(i, element){
+//             var result = {};
+
+//             result.title = $(this)
+//                 .children('')
                 
-        });
+//         });
+//     });
+// });
+
+
+
+request('https://www.metacritic.com/browse/movies/release-date/theaters/date', function(error, response, html){
+    const $ = cheerio.load(html);
+
+    result = [];
+    $('div.image_strip').each(function(i, element){
+        const title = $(element).text();
+        console.log(title);
+        result.push(title);
+
     });
+    console.log(result)
 });
 
 
