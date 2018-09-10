@@ -1,28 +1,16 @@
-<<<<<<< HEAD
-var express = require("express");
-var bodyParser = require("body-parser");
-var logger = require("morgan");
-var mongoose = require("mongoose");
-=======
 const express = require("express");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
 const request = require('request');
->>>>>>> 9d9b587d5bb7dc9e3b73849dc9879e211dd20d2c
 
 // Our scraping tools
 // Axios is a promised-based http library, similar to jQuery's Ajax method
 // It works on the client and on the server
-var axios = require("axios");
 var cheerio = require("cheerio");
 
 // Require all models
-<<<<<<< HEAD
-var db = require("./models");
-=======
 // var db = require("./models");
->>>>>>> 9d9b587d5bb7dc9e3b73849dc9879e211dd20d2c
 
 var PORT = 3000;
 
@@ -37,8 +25,6 @@ app.use(logger("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
-<<<<<<< HEAD
-=======
 
 // Connect to the Mongo DB
 mongoose.connect("mongodb://localhost/newreleases");
@@ -47,50 +33,95 @@ mongoose.connect("mongodb://localhost/newreleases");
 //                  Routes
 //===============================================
 
-// app.get("/scrape", function(req, res){
-//     axios.get('https://www.metacritic.com/browse/movies/release-date/theaters/date')
-//     .then(function(response){
-//         const $ = cheerio.load(response.data);
 
 
-//         console.log();
+//MOVIES REQUEST
+app.get("/scrape", function (req, res){
+    request('https://www.metacritic.com/browse/movies/release-date/theaters/date', function (error, response, html) {
+        const $ = cheerio.load(html),
+            scoreResults = [],
+            splitDateAndTitleArray = [];
 
-    
-        
-//         const results = {};
-        
-        
-
-
-
-//         $('movie h2').each(function(i, element){
-//             var result = {};
-
-//             result.title = $(this)
-//                 .children('')
-                
-//         });
-//     });
-// });
+        let moviesArray = [];
 
 
+        $('div.image_strip').each(function (i, element) {
+            //Getting the data from the HTML, and splitting them into an array.
+            const data = $(element).text().trim().split('\n');
 
-request('https://www.metacritic.com/browse/movies/release-date/theaters/date', function(error, response, html){
-    const $ = cheerio.load(html);
+            //Deleting all the white space with filter function.
+            const filteredArray = data.filter(function (str) {
+                return /\S/.test(str);
+            });
 
-    result = [];
-    $('div.image_strip').each(function(i, element){
-        const title = $(element).text();
-        console.log(title);
-        result.push(title);
+            //Pushes scores into scoreResults
+            for (var scores = 0; scores < filteredArray.length; scores = scores + 2) {
+                scoreResults.push(filteredArray[scores]);
+            }
+
+            //Array for Date and Title. (Need to split them)
+            dateAndTitleArray = [];
+            for (var dateAndTitle = 1; dateAndTitle < filteredArray.length; dateAndTitle = dateAndTitle + 2) {
+                dateAndTitleArray.push(filteredArray[dateAndTitle]);
+            }
+
+            for (j = 0; j < dateAndTitleArray.length; j++) {
+                //Looking for a number in each index (j)
+                string = dateAndTitleArray[j]
+
+                //Putting the characters as a variable
+                const characterFour = string.charAt(4)
+                const characterFive = string.charAt(5)
+                const characterSix = string.charAt(6)
+                if (isNaN(characterFive) === false) {
+                    commaArray = string.replace(characterFive, characterFive + ",")
+
+                    // console.log(commaArray);
+                    let titleAndDateSplit = commaArray.split(",")
+                    splitDateAndTitleArray.push(titleAndDateSplit)
+                }
+                else {
+                    commaArray = string.replace(characterFive, "," + characterFive)
+                    // console.log(commaArray);
+                    let titleAndDateSplit = commaArray.split(",")
+                    splitDateAndTitleArray.push(titleAndDateSplit)
+
+                }
+            }
+
+            //Pushing the scores into the split array.
+            for (var p = 0; p < splitDateAndTitleArray.length; p++) {
+                splitDateAndTitleArray[p].push(scoreResults[p]);
+
+            }
+
+            //Converts the array into objects and pushes into the movies array
+            splitDateAndTitleArray.forEach(element => {
+                movies = {
+                    releaseDate: element[0],
+                    title: element[1],
+                    score: element[2]
+                }
+                moviesArray.push(movies)
+            });
+            console.log("Your Movies", moviesArray)
+
+
+
+        });
 
     });
-    console.log(result)
 });
 
 
+
+
+
+
+
 // Start the server
-app.listen(PORT, function() {
+app.listen(PORT, function () {
     console.log("App running on port " + PORT + "!");
-  });
->>>>>>> 9d9b587d5bb7dc9e3b73849dc9879e211dd20d2c
+});
+
+
