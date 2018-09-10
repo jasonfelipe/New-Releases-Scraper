@@ -10,7 +10,7 @@ const request = require('request');
 var cheerio = require("cheerio");
 
 // Require all models
-// var db = require("./models");
+var db = require("./models");
 
 var PORT = 3000;
 
@@ -36,14 +36,11 @@ mongoose.connect("mongodb://localhost/newreleases");
 
 
 //MOVIES REQUEST
-app.get("/scrape", function (req, res){
+app.get("/scrape", function (req, res) {
     request('https://www.metacritic.com/browse/movies/release-date/theaters/date', function (error, response, html) {
         const $ = cheerio.load(html),
             scoreResults = [],
             splitDateAndTitleArray = [];
-
-        let moviesArray = [];
-
 
         $('div.image_strip').each(function (i, element) {
             //Getting the data from the HTML, and splitting them into an array.
@@ -97,26 +94,32 @@ app.get("/scrape", function (req, res){
 
             //Converts the array into objects and pushes into the movies array
             splitDateAndTitleArray.forEach(element => {
-                movies = {
+                let movies = {
                     releaseDate: element[0],
                     title: element[1],
                     score: element[2]
                 }
-                moviesArray.push(movies)
+                console.log(movies);
+                db.Movie.create(movies)
+                .then(dbMovies => {
+                    console.log(dbMovies);
+                }).catch(err => res.json(err))
             });
-            console.log("Your Movies", moviesArray)
-
 
 
         });
-
+        res.send("Scrape Complete");
     });
 });
 
 
 
 
-
+//TO DO - 
+//GET NEW GAMES AND NEW ALBUMS INTO THERE (DB)
+//PUT THEM ON A WEBPAGE
+//LET SAVING HAPPEN IN DB
+//I DUNNO WHAT ELSE.
 
 
 // Start the server
