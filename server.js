@@ -27,7 +27,9 @@ app.use(logger("dev"));
 // Use body-parser for handling form submissions
 app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
-app.use(express.static("public"));
+
+//To get rid of the MIME type garbage. 
+app.use(express.static(__dirname + '/public'));
 
 // Connect to the Mongo DB
 mongoose.connect("mongodb://localhost/newreleases");
@@ -36,6 +38,14 @@ mongoose.connect("mongodb://localhost/newreleases");
 //                  Routes
 //===============================================
 
+app.get("/", function(req, res) {
+    db.Movie.find({}, function(error, data) {
+      var hbsObject = {
+        movies: data
+      };
+      res.render("index", hbsObject);
+    });
+  });
 
 
 //MOVIES REQUEST
@@ -103,7 +113,7 @@ app.get("/scrape", function (req, res) {
                     score: element[2]
                 }
                 console.log(movies);
-                db.Movie.create(movies)
+                db.Movie.create(movies, {unique: true})
                     .then(dbMovie => {
                         console.log(dbMovie);
                     }).catch(err => res.json(err))
@@ -114,6 +124,21 @@ app.get("/scrape", function (req, res) {
         res.send("Scrape Complete");
     });
 });
+
+
+// Route for getting all Articles from the db
+app.get("/movies", function(req, res) {
+    // Grab every document in the Articles collection
+    db.Movie.find({})
+      .then(function(dbMovie) {
+        // If we were able to successfully find Articles, send them back to the client
+        res.json(dbMovie);
+      })
+      .catch(function(err) {
+        // If an error occurred, send it to the client
+        res.json(err);
+      });
+  });
 
 app.get("/movies/:id", function (req, res) {
     // Using the id passed in the id parameter, prepare a query that finds the matching one in our db...
@@ -151,11 +176,42 @@ app.post("/movies/:id", function (req, res) {
         });
 });
 
-//TO DO - 
-//GET NEW GAMES AND NEW ALBUMS INTO THERE (DB)
-//PUT THEM ON A WEBPAGE
-//LET SAVING HAPPEN IN DB
-//I DUNNO WHAT ELSE.
+
+// Create a new note
+app.post("/notes/save/:id", function(req, res) {
+    // Create a new note and pass the req.body to the entry
+    var newNote = new Note({
+      body: req.body.text,
+      title: req.params.title
+    });
+    console.log(req.body)
+    // And save the new note the db
+    newNote.save(function(error, note) {
+      // Log any errors
+      if (error) {
+        console.log(error);
+      }
+      // Otherwise
+      else {
+        // Use the article id to find and update it's notes
+        Movie.findOneAndUpdate({ "_id": req.params.id }, {$push: { "notes": note } })
+        // Execute the above query
+        .exec(function(err) {
+          // Log any errors
+          if (err) {
+            console.log(err);
+            res.send(err);
+          }
+          else {
+            // Or send the note to the browser
+            res.send(note);
+          }
+        });
+      }
+    });
+  });
+
+
 
 
 // Start the server

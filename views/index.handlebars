@@ -1,9 +1,33 @@
-<h1>Movies!</h1>
+<h1> Recent Movies!</h1>
 
-<h2>New Releases</h2>
 
-<ul>
-  {{#each movies}}
-  {{/each}}
-</ul>
+<div>
+  <div id="movies"></div>
+</div>
+
+<div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Write a Note here!</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+
+        <div class="md-form">
+          <label data-error="wrong" data-success="right" for="form8">Your Notes</label>
+          <i class="fa fa-pencil prefix grey-text"></i>
+          <textarea type="text" id="notes" class="md-textarea form-control" rows="4"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button id='saveNote' class="btn btn-unique">Save <i class="fa fa-paper-plane-o ml-1"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 

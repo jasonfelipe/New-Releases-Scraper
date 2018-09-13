@@ -6,10 +6,10 @@ var Schema = mongoose.Schema;
 // Using the Schema constructor, create a new UserSchema object
 // This is similar to a Sequelize model
 var MovieSchema = new Schema({
-  // `title` is required and of type String
   title: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   releaseDate: {
     type: String,
@@ -26,6 +26,7 @@ var MovieSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Note"
   }
+  
 });
 
 // This creates our model from the above schema, using mongoose's model method
